@@ -23,7 +23,17 @@ apollo_control = list(
 # ################################################################# #
 
 
-database <- read.csv("/Users/taiebat/Box/Apollo Package/NHTS/CAHHData.csv")
+database <- read.csv("/Users/taiebat/Box/Apollo Package/MDCEV/CAHHData.csv")
+attach(database)
+database$mileBudget <- car1+car2+car3plus+active+pubtransp+ridehail
+detach(database)
+
+sum(database$mileBudget <= 0)
+database <- database %>% 
+  filter(!(database$mileBudget <= 0))
+sum(database$mileBudget <= 0)
+
+database <- rbind(database,database)
 
 # ################################################################# #
 #### DEFINE MODEL PARAMETERS                                     ####
@@ -31,7 +41,7 @@ database <- read.csv("/Users/taiebat/Box/Apollo Package/NHTS/CAHHData.csv")
 
 ### Vector of parameters, including any that are kept fixed in estimation
 apollo_beta = c(alpha_base        = 0,
-                gamma_avtive      = 1,
+                gamma_active      = 1,
                 gamma_car1        = 1,
                 gamma_car2        = 1,
                 gamma_car3plus    = 1,
@@ -43,9 +53,6 @@ apollo_beta = c(alpha_base        = 0,
                 delta_car3plus    = 0,
                 delta_pubtransp   = 0,
                 delta_ridehail    = 0,
-                #delta_work_wknd    = 0,
-                #delta_school_young = 0,
-                #delta_leisure_wknd = 0,
                 sigma              = 1)
 
 ### Vector with names (in quotes) of parameters to be kept fixed at their starting value in apollo_beta, use apollo_beta_fixed = c() if none
@@ -70,65 +77,65 @@ apollo_probabilities=function(apollo_beta, apollo_inputs, functionality="estimat
   ### Create list of probabilities P
   P = list()
   
-  ### Define individual alternatives
-  alternatives  = c("outside",
-                    "work",
-                    "school",
-                    "shopping",
-                    "private", 
-                    "leisure")
+  ### Define individual alternatives modes
+  alternatives  = c("car1",
+                    "car2",
+                    "car3plus",
+                    "active",
+                    "pubtransp", 
+                    "ridehail")
   
   ### Define availabilities
-  avail = list(outside  = 1, 
-               work     = 1, 
-               school   = 1, 
-               shopping = 1, 
-               private  = 1,
-               leisure  = 1)
+  avail = list(car1       = 1, 
+               car2       = 1, 
+               car3plus   = 1, 
+               active     = 1, 
+               pubtransp  = 1,
+               ridehail   = 1)
   
-  ### Define continuous consumption for individual alternatives
-  continuousChoice = list(outside  = t_outside/60,
-                          work     = t_a02/60,
-                          school   = t_a03/60,
-                          shopping = t_a04/60,
-                          private  = t_a05/60,
-                          leisure  = t_leisure/60)
+  ### Define continuous consumption for alternative modes
+  continuousChoice = list(car1       = car1,
+                          car2       = car2,
+                          car3plus   = car3plus,
+                          active     = active,
+                          pubtransp  = pubtransp,
+                          ridehail   = ridehail)
 
-  ### Define utilities for individual alternatives
+  ### Define utilities for individual alternative modes
   V = list()
-  V[["outside"]]  = 0
-  V[["work"]]     = delta_work     + delta_work_FT * occ_full_time + delta_work_wknd * weekend
-  V[["school"]]   = delta_school   + delta_school_young * (age<=30)
-  V[["shopping"]] = delta_shopping
-  V[["private"]]  = delta_private
-  V[["leisure"]]  = delta_leisure  + delta_leisure_wknd*weekend
+  V[["car1"]]  = delta_car1
+  V[["car2"]]     = delta_car2
+  V[["car3plus"]]   = delta_car3plus  
+  V[["active"]] = delta_active
+  V[["pubtransp"]]  = delta_pubtransp
+  V[["ridehail"]]  = delta_ridehail 
   
   ### Define alpha parameters
-  alpha = list(outside  = 1 /(1 + exp(-alpha_base)), 
-               work     = 1 /(1 + exp(-alpha_base)), 
-               school   = 1 /(1 + exp(-alpha_base)), 
-               shopping = 1 /(1 + exp(-alpha_base)), 
-               private  = 1 /(1 + exp(-alpha_base)),
-               leisure  = 1 /(1 + exp(-alpha_base)))
+  alpha = list(car1  = 1 /(1 + exp(-alpha_base)), 
+               car2     = 1 /(1 + exp(-alpha_base)), 
+               car3plus   = 1 /(1 + exp(-alpha_base)), 
+               active = 1 /(1 + exp(-alpha_base)), 
+               pubtransp  = 1 /(1 + exp(-alpha_base)),
+               ridehail  = 1 /(1 + exp(-alpha_base)))
   
   ### Define gamma parameters
-  gamma = list(outside  = 1,
-               work     = gamma_work,    
-               school   = gamma_school,
-               shopping = gamma_shopping,
-               private  = gamma_private,
-               leisure  = gamma_leisure)
+  gamma = list(car1  = gamma_car1,
+               car2     = gamma_car2,    
+               car3plus   = gamma_car3plus,
+               active = gamma_active,
+               pubtransp  = gamma_pubtransp,
+               ridehail  = gamma_ridehail)
 
   ### Define costs for individual alternatives
-  cost = list(outside  = 1, 
-              work     = 1, 
-              school   = 1, 
-              shopping = 1, 
-              private  = 1,
-              leisure  = 1)
+  cost = list(car1      = 1, 
+              car2      = 1, 
+              car3plus  = 1, 
+              active    = 1, 
+              pubtransp = 1,
+              ridehail  = 1)
   
   ### Define budget
-  budget = budget/60
+  budget = mileBudget
   
   ### Define settings for MDCEV model
   mdcev_settings <- list(alternatives      = alternatives,

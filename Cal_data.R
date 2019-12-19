@@ -8,7 +8,6 @@ table(TData$HHSTATE)
 table(TData$VEHID)
 table(TData$TRPTRANS)
 
-#it is morteza
 
 ## VMT_MILE & TRPMILES
 TData <- subset(TData, HHSTATE == "CA")
@@ -51,3 +50,20 @@ write_csv(CAHHData, path = "/Users/taiebat/Box/Apollo Package/NHTS/CAHHData.csv"
 
 
 
+
+
+
+
+database <- read.csv("/Users/taiebat/Box/Apollo Package/MDCEV/CAHHData.csv")
+
+summary(database$active)
+summary(database$car)
+summary(database$car1)
+summary(database$car2)
+summary(database$car3plus)
+summary(database$pubtransp)
+summary(database$ridehail)
+
+sum(database$mileBudget <= 0)
+database <- database %>% 
+  filter(!(database$mileBudget <= 0))
