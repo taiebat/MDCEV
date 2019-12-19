@@ -8,7 +8,6 @@ table(TData$HHSTATE)
 table(TData$VEHID)
 table(TData$TRPTRANS)
 
-#it is morteza
 
 ## VMT_MILE & TRPMILES
 TData <- subset(TData, HHSTATE == "CA")
